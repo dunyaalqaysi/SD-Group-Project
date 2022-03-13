@@ -8,12 +8,25 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Navbar from "../Navbar/Navbar";
+import { endpoint_url } from "src/constants";
 
 export default function Profile() {
   const [currState, setCurrState] = React.useState("");
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    fetch(`${endpoint_url}/profile`, 
+    {
+      method: "POST",
+      body: data
+    }
+    )
+    .then( (res) => {
+      return res.json()
+    })
+    .then( (data) => {
+        console.log(data)
+    })
     console.log({
       email: data.get("email"),
       password: data.get("password"),
@@ -59,7 +72,7 @@ export default function Profile() {
                   color="secondary"
                   variant="standard"
                   autoComplete="given-name"
-                  name="firstName"
+                  name="fullName"
                   required
                   fullWidth
                   id="firstName"
@@ -74,10 +87,10 @@ export default function Profile() {
                   variant="standard"
                   required
                   fullWidth
-                  id="email"
+                  id="add1"
                   label="Address Line 1"
-                  name="email"
-                  autoComplete="email"
+                  name="add1"
+                  autoComplete="address"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -85,11 +98,9 @@ export default function Profile() {
                   color="secondary"
                   variant="standard"
                   fullWidth
-                  name="password"
+                  name="add2"
                   label="Address Line 2"
-                  type="password"
-                  id="password"
-                  autoComplete="new-password"
+                  id="add2"
                 />
               </Grid>
               <Grid item xs={2}>
@@ -120,11 +131,10 @@ export default function Profile() {
                 <TextField
                      color="secondary"
                      variant="standard"
-                     autoComplete="given-name"
-                     name="firstName"
+                     name="city"
                      required
                      fullWidth
-                     id="firstName"
+                     id="city"
                      label="City"
                      autoFocus
                  /> 
@@ -133,11 +143,10 @@ export default function Profile() {
                 <TextField
                      color="secondary"
                      variant="standard"
-                     autoComplete="given-name"
-                     name="firstName"
+                     name="zipCode"
                      required
                      fullWidth
-                     id="firstName"
+                     id="zip"
                      label="Zip Code"
                      autoFocus
                  /> 

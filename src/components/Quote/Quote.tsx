@@ -86,7 +86,6 @@ export default function Quote() {
                   <DatePicker
                     disablePast
                     label="Date"
-                    // maxDate="01/01/2024"
                     value={value}
                     onChange={(newValue) => {
                       setValue(newValue);

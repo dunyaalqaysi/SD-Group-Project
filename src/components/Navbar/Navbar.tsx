@@ -15,7 +15,6 @@ import { LightMode, Brightness3 } from "@mui/icons-material";
 const Navbar = () => {
   const theme = useTheme();
   const context = React.useContext(ColorModeContext);
-
   return (
     <AppBar position="static">
       <CssBaseline enableColorScheme />
@@ -29,6 +28,9 @@ const Navbar = () => {
           </Link>
           <Link to="/quote" className="link">
             Get a Quote
+          </Link>
+          <Link to="/" className="link">
+            Sign out
           </Link>
           <IconButton
             sx={{ ml: 1, pt: 0.5 }}
