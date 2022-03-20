@@ -2,48 +2,57 @@ import * as React from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-// import Link from '@mui/material/Link';
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Navbar from "../Navbar/Navbar";
-import { endpoint_url } from "src/constants";
+import { endpoint_url, states } from "src/constants";
 
 export default function Profile() {
   const [currState, setCurrState] = React.useState("");
+  const [errors, setErrors] = React.useState<any>({
+    fullName: null,
+    add1: null,
+    add2: null,
+    state: null,
+    city: null,
+    zipCode: null,
+  });
+  
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    fetch(`${endpoint_url}/profile`, 
-    {
+    fetch(`${endpoint_url}/profile`, {
       method: "POST",
-      body: data
-    }
-    )
-    .then( (res) => {
-      return res.json()
+      body: data,
     })
-    .then( (data) => {
-        console.log(data)
-    })
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+      .then((res) => {
+        console.log(res.body);
+        if (res.status === 200) return;
+        const errs = res.json();
+        return errs;
+      })
+      .then((data) => {
+        if (!data) {
+          console.log("Posted successfully.");
+          return;
+        }
+        console.log(data);
+        for (const err in data)
+          setErrors((prev_errors: any) => ({
+            ...prev_errors,
+            [err]: data[err][0],
+          }));
+      });
   };
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setCurrState(event.target.value);
+    if(errors.state !== null)
+      setErrors({ ...errors, state: null });
   };
-  const states = [
-    'AL','AK','AS','AZ','AR','CA','CO','CT','DE','DC','FM','FL','GA',
-    'GU','HI','ID','IL','IN','IA','KS','KY','LA','ME','MH','MD','MA',
-    'MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND',
-    'MP','OH','OK','OR','PW','PA','PR','RI','SC','SD','TN','TX','UT',
-    'VT','VI','VA','WA','WV','WI','WY'
-   ];
   return (
     <div>
       <Navbar />
@@ -58,7 +67,7 @@ export default function Profile() {
           }}
         >
           <Typography component="h1" variant="h5">
-            Initial Profile Setup
+            Let's manage your profile.
           </Typography>
           <Box
             component="form"
@@ -73,8 +82,14 @@ export default function Profile() {
                   variant="standard"
                   autoComplete="given-name"
                   name="fullName"
+                  error={(errors.fullName !== null) ? true : false}
+                  helperText={(errors.fullName !== null) ? errors.fullName : ""}
                   required
                   fullWidth
+                  onChange={() => {
+                    if(errors.fullName !== null)
+                      setErrors({...errors, fullName: null });
+                  }}
                   id="firstName"
                   label="Full Name"
                   autoFocus
@@ -90,6 +105,12 @@ export default function Profile() {
                   id="add1"
                   label="Address Line 1"
                   name="add1"
+                  error={(errors.add1 !== null) ? true : false}
+                  helperText={(errors.add1 !== null) ? errors.add1 : ""}
+                  onChange={() => {
+                    if(errors.add1 !== null)
+                      setErrors({ ...errors, add1: null });
+                  }}
                   autoComplete="address"
                 />
               </Grid>
@@ -97,6 +118,12 @@ export default function Profile() {
                 <TextField
                   color="secondary"
                   variant="standard"
+                  error={(errors.add2 !== null) ? true : false}
+                  helperText={(errors.add2 !== null) ? errors.add2 : ""}
+                  onChange={() => {
+                    if(errors.add2 !== null)
+                      setErrors({ ...errors, add2: null });
+                  }}
                   fullWidth
                   name="add2"
                   label="Address Line 2"
@@ -107,16 +134,18 @@ export default function Profile() {
                 <TextField
                   select
                   color="secondary"
-                  name="State"
+                  name="state"
                   label="State"
+                  error={(errors.state !== null) ? true : false}
+                  helperText={(errors.state !== null) ? errors.state : ""}
                   onChange={handleChange}
                   SelectProps={{
                     native: true,
                   }}
                   value={currState}
                   sx={{
-                    minWidth: 80,
-                    maxWidth: 80
+                    minWidth: 55,
+                    maxWidth: 80,
                   }}
                   autoFocus
                 >
@@ -129,27 +158,39 @@ export default function Profile() {
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                     color="secondary"
-                     variant="standard"
-                     name="city"
-                     required
-                     fullWidth
-                     id="city"
-                     label="City"
-                     autoFocus
-                 /> 
+                  color="secondary"
+                  variant="standard"
+                  name="city"
+                  error={(errors.city !== null) ? true : false}
+                  helperText={(errors.city !== null) ? errors.city : ""}
+                  onChange={() => {
+                    if(errors.city !== null)
+                      setErrors({ ...errors, city: null });
+                  }}
+                  required
+                  fullWidth
+                  id="city"
+                  label="City"
+                  autoFocus
+                />
               </Grid>
               <Grid item xs={4}>
                 <TextField
-                     color="secondary"
-                     variant="standard"
-                     name="zipCode"
-                     required
-                     fullWidth
-                     id="zip"
-                     label="Zip Code"
-                     autoFocus
-                 /> 
+                  color="secondary"
+                  variant="standard"
+                  name="zipCode"
+                  error={(errors.zipCode !== null) ? true : false}
+                  helperText={(errors.zipCode !== null)? errors.zipCode : ""}
+                  onChange={() => {
+                    if(errors.zipCode !== null)
+                      setErrors({ ...errors, zipCode: null });
+                  }}
+                  required
+                  fullWidth
+                  id="zip"
+                  label="Zip Code"
+                  autoFocus
+                />
               </Grid>
             </Grid>
             <Button
@@ -158,7 +199,7 @@ export default function Profile() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Submit
+              Update
             </Button>
           </Box>
         </Box>

@@ -8,50 +8,39 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import validate from "validate.js";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { endpoint_url } from "src/constants";
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: {
-      main: "#ffffff",
-    },
-  },
-});
-const validate_email = (em: string) => {
-  return validate(
-    { from: em },
-    {
-      from: {
-        email: true,
-      },
-    }
-  );
-};
+import { ThemeProvider } from "@mui/material/styles";
+import { endpoint_url, theme } from "src/constants";
+
+
 
 export default function Login() {
   const [emailState, setEmailState] = React.useState("");
-  const [passwordState, setPasswordState] = React.useState("");
-  const [validPass, setValidPass] = React.useState(true);
+  const [errors, setErrors] = React.useState({ email: null, password: null });
   const nav_to = useNavigate();
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    if (data.get("password")?.toString().length === 0) {
-      setValidPass(false);
-      return;
-    }
     fetch(`${endpoint_url}`, {
       method: "POST",
       body: data,
     })
       .then((res) => {
+        if (res.status === 200) return;
         return res.json();
       })
       .then((data) => {
+        if (!data) {
+          console.log("Signed in succesfully.");
+          nav_to("/profile", { replace: true });
+          return
+        }
+        for (const err in data) {
+          setErrors((prev_errors: any) => ({
+            ...prev_errors,
+            [err]: data[err][0],
+          }));
+        }
         console.log(data);
-        nav_to("/profile", { replace: true });
       });
   };
 
@@ -73,51 +62,42 @@ export default function Login() {
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
-              // required
-              error={validate_email(emailState) && emailState.length !== 0}
+              required
+              error={errors.email !== null ? true : false}
               fullWidth
               id="email"
               label="Email Address"
               placeholder="Ex: laquer@gmail.com"
               name="email"
-              helperText={
-                validate_email(emailState) && emailState.length !== 0
-                  ? "Please enter a valid email."
-                  : ""
-              }
+              helperText={errors.email !== null ? errors.email : ""}
               value={emailState}
               onChange={(e) => {
                 setEmailState(e.target.value);
+                if(errors.email !== null)
+                  setErrors({ email: null, password: errors.password });
               }}
               autoComplete="email"
               autoFocus
             />
             <TextField
               margin="normal"
-              // required
+              required
               fullWidth
-              error={!validPass}
+              error={errors.password !== null ? true : false}
               name="password"
               label="Password"
               type="password"
               id="password"
-              helperText={
-                !validPass ? "Please enter a password that isn't empty." : ""
-              }
-              onChange={(e) => {
-                setPasswordState(e.target.value);
-                setValidPass(true);
+              helperText={errors.password !== null ? errors.password : ""}
+              onChange={() => {
+                if(errors.password !== null)
+                  setErrors({ email: errors.email, password: null });
               }}
               autoComplete="current-password"
             />
             <Button
               type="submit"
               fullWidth
-              disabled={
-                !validate_email(emailState) && passwordState.length > 0
-                  ? false
-                  : true
-              }
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >

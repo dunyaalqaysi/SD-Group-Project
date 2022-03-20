@@ -8,6 +8,7 @@ load_dotenv(path.join(basedir, '.env'))
 SECRET_KEY = environ.get('SECRET_KEY')
 FLASK_APP = environ.get('FLASK_APP')
 FLASK_ENV = environ.get('FLASK_ENV')
+WTF_CSRF_ENABLED = False
 
 # Database
 SQLALCHEMY_DATABASE_URI = 'mysql://' + environ.get("SQLALCHEMY_DATABASE_URI")

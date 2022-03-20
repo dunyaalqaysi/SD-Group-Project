@@ -7,25 +7,42 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import { endpoint_url, theme } from "src/constants";
 
-const theme = createTheme({
-    palette: { 
-        mode: "dark",
-        primary: {
-            main: "#ffffff"
-        }
-    }
-});
 
 export default function Register() {
+  const [emailState, setEmailState] = React.useState("");
+  const [errors, setErrors] = React.useState({email: null, password: null})
+  const nav_to = useNavigate();
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    fetch(`${endpoint_url}/register`,
+    {
+      method: 'POST',
+      body: data
+    })
+    .then( (res) => {
+      if(res.status === 200) return;
+      return res.json()
+    })
+    .then( (data) => {
+      if(!data){
+        console.log("Registered successfully.")
+        nav_to("/profile", {replace: true})
+        return
+      }
+      for (const err in data) {
+        setErrors((prev_errors: any) => ({
+          ...prev_errors,
+          [err]: data[err][0],
+        }));
+      }
+      console.log(data)
+    })
   };
 
   return (
@@ -52,23 +69,45 @@ export default function Register() {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
+                  margin="normal"
                   required
+                  error={(errors.email !== null) ? true : false}
                   fullWidth
                   id="email"
                   label="Email Address"
+                  placeholder="Ex: laquer@gmail.com"
                   name="email"
+                  helperText={
+                    (errors.email !== null) ? errors.email : ""
+                  }
+                  value={emailState}
+                  onChange={(e) => {
+                    setEmailState(e.target.value);
+                    if(errors.email !== null)
+                      setErrors({email: null, password: errors.password})
+                  }}
                   autoComplete="email"
+                  autoFocus
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  margin="normal"
                   required
                   fullWidth
+                  error={(errors.password !== null) ? true : false}
                   name="password"
                   label="Password"
                   type="password"
                   id="password"
-                  autoComplete="new-password"
+                  helperText={
+                    (errors.password !== null) ? errors.password : ""
+                  }
+                  onChange={() => {
+                    if(errors.password !== null)
+                      setErrors({email: errors.email, password: null})
+                  }}
+                  autoComplete="current-password"
                 />
               </Grid>
             </Grid>
